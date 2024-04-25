@@ -1,0 +1,126 @@
+
+3 xil til boycha translate
+
+https://api.alquran.cloud/v1/surah/en.ahmedali  eng translate 
+
+https://api.alquran.cloud/v1/surah/1/uz.sodik  uzb translate
+
+https://api.alquran.cloud/v1/surah/1/ru.kuliev ru translate
+
+Audyo 
+
+1. http://api.alquran.cloud/v1/surah
+
+ 
+https://api.alquran.cloud/v1/edition/format/audio barcha quran oqidganla 
+
+
+  http://api.alquran.cloud/v1/surah/114/ar.alafasy
+
+
+
+Sajda oyatlari 
+
+http://api.alquran.cloud/v1/sajda/quran-uthmani
+
+
+
+Nomoz Vaqtalri 
+   
+
+https://islomapi.uz/api/present/day?region=Toshkent
+
+
+{
+  "regions": [
+    "Оltiariq",
+    "Bishkek",
+    "O'smat",
+    "To'rtko'l",
+    "Uzunquduq",
+    "Jizzax",
+    "Оltinko'l",
+    "Chimkent",
+    "Rishtоn",
+    "Xo'jaоbоd",
+    "Do'stlik",
+    "Buxoro",
+    "Termiz",
+    "Dushanbye",
+    "Turkmanоbоd",
+    "Qоrоvulbоzоr",
+    "Оlmaоta",
+    "Xоnqa",
+    "Tallimarjоn",
+    "Uchqo'rg'оn",
+    "Uchtepa",
+    "Xоnоbоd",
+    "Toshkent",
+    "G'uzоr",
+    "Bekоbоd",
+    "Navoiy",
+    "Qo'rg'оntepa",
+    "Mubоrak",
+    "Ashxabоd",
+    "Оlоt",
+    "Jalоlоbоd",
+    "Nurоta",
+    "Andijon",
+    "Turkistоn",
+    "Shumanay",
+    "Namangan",
+    "Chimbоy",
+    "Jоmbоy",
+    "Sherоbоd",
+    "Mo'ynоq",
+    "Bulоqbоshi",
+    "Uchquduq",
+    "Samarqand",
+    "Qiziltepa",
+    "Zоmin",
+    "Xo'jand",
+    "Tоmdi",
+    "Yangibоzоr",
+    "Jambul",
+    "Nukus",
+    "Chоrtоq",
+    "Taxtako'pir",
+    "Tоshhоvuz",
+    "Xiva",
+    "Kоsоnsоy",
+    "Kоnimex",
+    "Mingbulоq",
+    "Paxtaоbоd",
+    "Denоv",
+    "O'g'iz",
+    "Qo'ng'irоt",
+    "Chust",
+    "Kattaqo'rg'оn",
+    "Farg'оna",
+    "Qоrako'l",
+    "Arnasоy",
+    "Osh",
+    "Sayram",
+    "Angren",
+    "Pоp",
+    "G'allaоrоl",
+    "Urgut",
+    "Shahrixоn",
+    "Guliston",
+    "Qumqo'rg'оn",
+    "Bоysun",
+    "Urganch",
+    "Qo'qon",
+    "Gazli",
+    "Xazоrasp",
+    "Marg'ilon",
+    "Shоvоt",
+    "Kоnibоdоm",
+    "Quva",
+    "Burchmulla",
+    "Dehqоnоbоd",
+    "Zarafshоn",
+    "Qarshi",
+    "Kоsоn"
+  ]
+}
