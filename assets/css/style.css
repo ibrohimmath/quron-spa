@@ -1,3 +1,5 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,regular,500,600,700,800,300italic,italic,500italic,600italic,700italic,800italic);
+
 :root {
   --green-light: rgb(149, 240, 149);
   --green-dark: rgb(58, 227, 58); 
@@ -13,6 +15,31 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  font-family: 'open-sans', sans-serif;
+}
+
+::-webkit-scrollbar {
+  position: absolute;
+  right: -10px;
+  width: 4px;               /* width of the entire scrollbar */
+  height: 5px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: inherit;    /* color of the scroll thumb */
+  border-radius: 5px;       /* roundness of the scroll thumb */
+  border: 3px solid inherit;  /* creates padding around scroll thumb */
+  height: 5px !important;
+}
+
+::-webkit-scrollbar-button {
+  height: 5px !important;
+}
+
+:hover::-webkit-scrollbar-thumb {
+  border: 3px solid gray;
+  background: gray;
+  height: 5px !important;
 }
 
 /* Logo */
@@ -96,12 +123,12 @@ nav {
 .container {
   height: calc(100vh - 60px);
   display: grid;
-  grid-template-columns: 75px calc(100vw - 75px);
+  grid-template-columns: 75px calc(100% - 75px);
 }
 
 /* sidebar */
 .sidebar {
-  height: 100%;
+  height: calc(100vh - 60px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,13 +195,13 @@ nav {
 
 /* content */
 .content {
-  width: 100%;
-  height: 100%;
+  height: calc(100vh - 60px);
   border-top-left-radius: 30px;
   padding: 13px;
   display: grid;
-  grid-template-columns: 1fr 4fr;
+  grid-template-columns: 1.2fr 4fr;
   gap: 15px;
+  overflow-y: hidden;
 }
 
 .content-mode__light {
@@ -191,7 +218,7 @@ nav {
 
 .content__wrapper {
   position: relative;
-  height: 100%;
+  height: calc(100% - 60px);
   width: 100%;
 }
 
@@ -207,10 +234,19 @@ nav {
 
 /* lists */
 .lists {
-  height: 100%;
+  position: relative;
   border-radius: 15px;
   background: white;
   padding: 12px;
+}
+
+.lists ul {
+  position: absolute;
+  top: 64px;
+  left: 12px;
+  width: calc(100% - 12px);
+  height: calc(100% - 64px);
+  overflow-y: auto;
 }
 
 .lists-mode--light {
@@ -220,10 +256,14 @@ nav {
 
 .lists-mode--dark {
   background: rgb(36, 47, 65);
-  color: white;
 }
 
+/* searchfield */
 .searchfield {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: calc(100% - 24px);
   border-radius: 7px;
   padding: 3px 4px;
   display: flex;
@@ -248,6 +288,10 @@ nav {
   color: inherit;
 } 
 
+.searchfield > .search-number::placeholder {
+  color: inherit;
+}
+
 .searchfield > .search-logo {
   display: inline-block;
   padding: 8px;
@@ -268,11 +312,111 @@ nav {
   background: rgb(42, 55, 76);
 }
 
+/* list items */
+.list__item {
+  border-radius: 5px;  
+  padding: 10px 15px;
+  width: calc(100% - 10px);
+  min-height: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.list__item:not(:first-of-type) {
+  margin-top: 15px;
+}
+
+.list__item-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.list__item-mode--light:hover {
+  background: rgb(193, 253, 193);
+}
+
+.list__item-mode--dark {
+  color: rgb(155, 155, 155);
+}
+
+.list__item-mode--dark:hover {
+  background: rgb(61, 71, 88);
+}
+
+.list__item--active-mode--light {
+  background: rgb(193, 253, 193);
+}
+
+.list__item--active-mode--dark {
+  background: rgb(61, 71, 88);
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+.list__item-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.list__item-name-mode--light {
+  color: black;
+}
+
+.list__item-name-mode--dark {
+  color: rgb(228, 226, 226);   
+}
+
+.diamond {
+  border-radius: 5px;
+  padding: 3px;
+  aspect-ratio: 1/1;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(45deg);
+  font-size: 12px;
+}
+
+.diamond-mode--light {
+  background: var(--green-light);
+  color: greendark;
+}
+
+.list__item-mode--light:hover .diamond-mode--light,
+.list__item--active-mode--light .diamond-mode--light {
+  background: rgb(5, 130, 5);
+  color: white;
+}
+
+.list__item--active-mode--dark .diamond-mode--dark {
+  background: rgb(5, 130, 5);
+}
+
+.diamond-mode--dark {
+  color: white;
+  background: rgb(48, 63, 87);
+}
+
+.diamond__text {
+  transform: rotate(-45deg);
+}
 
 /* section */
 .section {
   height: 100%;
   border-radius: 25px;
+  /* background: red; */
 }
 
 /* settings div */
@@ -282,24 +426,54 @@ nav {
   right: -100%;
   width: 23vw;
   height: 100%;
-  background: red;
   border-top-left-radius: 25px;
   border-bottom-left-radius: 25px;
   z-index: 5;
   transition-duration: 0.5s;
+  padding: 30px 15px;
 }
 
 .settings--open {
   right: 0;
 }
 
-.settings-mode--light {
+.settingsdiv-mode--light {
   background: white;
   color: black;
 }
 
-.settings-mode--dark {
+.settingsdiv-mode--dark {
   background: #000;
+  background: var(--contentborder-dark);
+  color: white;
+}
+
+.row--head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settingsdiv__title {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.settingsdiv__close {
+  font-size: 20px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/* settingswindow */
+.settingswindow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  background: rgba(79, 79, 79, 0.523);
+  height: 100vh;
+  width: 100vw;
 }
 
 /* timepage */
@@ -321,13 +495,16 @@ nav {
 
 /* spinner */
 .spinner {
-   width: 72px;
-   height: 72px;
-   border-radius: 50%;
-   background: radial-gradient(farthest-side,#474bff 94%,#0000) top/11.5px 11.5px no-repeat,
-          conic-gradient(#0000 30%,#474bff);
-   -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 11.5px),#000 0);
-   animation: spinner-c7wet2 1s infinite linear;
+  position: absolute;
+  top: calc(50% - 50px);
+  left: calc(50% - 50px);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(farthest-side,var(--green-dark) 94%,#0000) top/11.5px 11.5px no-repeat,
+        conic-gradient(#0000 30%,var(--green-dark));
+  -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 11.5px),#000 0);
+  animation: spinner-c7wet2 1s infinite linear;
 }
 
 @keyframes spinner-c7wet2 {
