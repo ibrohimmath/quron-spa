@@ -53,7 +53,31 @@ const dataObj = {
     }
     return this.listItems;
   },
-}
+  async getOneListItem(id) {
+    if (!this.checkListItems()) {
+      await this.getListItems();
+    }
+    return this.listItems[id];
+  },
+  async downloadChunksOneListItem(id) {
+    try {
+      let res = await Promise.all([
+        fetch(`http://api.alquran.cloud/v1/surah/${id + 1}/ar.alafasy`),
+        fetch(`https://api.alquran.cloud/v1/surah/${id + 1}/en.ahmedali`),
+      ]);  
+      res = await Promise.all(res.map(data => data.json()));
+      res = res.map(data => {
+        return data.data.ayahs.map(item => item.text);
+      });
+      this.chunk = res;
+    } catch(err) {
+      console.log(err);
+    }
+  },
+  async getChunkOfOneListItem(id, ord) {
+    return this.chunk.map(item => item[ord]);
+  }
+};
 
 // -------------
 
@@ -147,9 +171,11 @@ const sidebarObj = {
   addComponents() {
     sidebar = document.createElement("div");
     sidebar.setAttribute("class", "sidebar");
+    const homeBtnActive = !history.path() || history.path() === "home" ? `sidebar__btn--active-mode--${mode}` : "";
+    const timeBtnActive = history.path() !== "time" ? "" : `sidebar__btn--active-mode--${mode}`;
     sidebar.innerHTML = `
-      <div data-path="home" class="sidebar__btn sidebar__btn-mode--${mode} sidebar__btn--active-mode--${mode}"><i class="fa-solid fa-house"></i></div>
-      <div data-path="time" class="sidebar__btn sidebar__btn-mode--${mode}"><i class="fa-regular fa-clock"></i></div>
+      <div data-path="home" class="sidebar__btn sidebar__btn-mode--${mode} ${homeBtnActive}"><i class="fa-solid fa-house"></i></div>
+      <div data-path="time" class="sidebar__btn sidebar__btn-mode--${mode} ${timeBtnActive}"><i class="fa-regular fa-clock"></i></div>
     `;
     this.changeMode(sidebar);
     container.appendChild(sidebar);
@@ -180,9 +206,9 @@ const listsObj = {
   async addListDatas() {
     const ul = lists.querySelector("ul");
     const listItems = await dataObj.getListItems();
-    listItems.forEach(({englishName, englishNameTranslation, name}, id) => {
+    listItems.forEach((item, id) => {
+      const {englishName, englishNameTranslation, name} = item;
       const listItemActive = id == dataObj.getSelectedItem() ? `list__item--active-mode--${mode}` : "";
-      console.log(listItemActive);
       ul.insertAdjacentHTML("beforeend", `
         <li class="list__item list__item-mode--${mode} ${listItemActive}" data-listItemId="${id}">
           <div class="diamond diamond-mode--${mode}">
@@ -204,15 +230,24 @@ const listsObj = {
     lists.appendChild(ul);
   },
   clickListItem(e) {
-    spinnerObj.addComponents();
     let el = e.target;
     if (el.closest(".list__item")) {
       el = el.closest(".list__item");
     }
     const previousActiveListItemId = dataObj.getSelectedItem();
     const selectedListItemId = +el.dataset.listitemid;
-    this.deactivateListItem(previousActiveListItemId);
-    this.activateListItem(selectedListItemId);
+    if (previousActiveListItemId === selectedListItemId) {
+      return;
+    }
+    spinnerObj.addComponents();
+    const timeout = setTimeout(() => {
+      this.deactivateListItem(previousActiveListItemId);  
+      this.activateListItem(selectedListItemId);
+      clear(section);
+      this.addListItemContent(selectedListItemId);
+      clearTimeout(timeout);
+    }, 1500);
+
   },
   deactivateListItem(id) {
     document.querySelector(`li[data-listitemid="${id}"]`).classList.remove(`list__item--active-mode--${mode}`);
@@ -220,29 +255,62 @@ const listsObj = {
   activateListItem(id) {
     dataObj.setSelectedItem(id);
     document.querySelector(`li[data-listitemid="${id}"]`).classList.add(`list__item--active-mode--${mode}`);
-  }
-}
+  },
+  async addListItemContent(id = dataObj.getSelectedItem()) {
+    let data = await dataObj.getOneListItem(id);
+    const contentHeader = document.createElement("div");
+    contentHeader.setAttribute("class", "contentheader");
+    contentHeader.classList.add(`contentheader-mode--${mode}`);
+    contentHeader.innerHTML = `
+      <div class="contentheader__title">${data.englishName}</div>
+      <div class="contentheader__info">Ayah-${data.numberOfAyahs}, ${data.revelationType}</div>
+    `;  
+    section.appendChild(contentHeader);
+    console.log("Chosen section item ID", id);
+    await dataObj.downloadChunksOneListItem(id);
+    for (let i = 0; i < data.numberOfAyahs; i++) {
+      const resultDatas = await dataObj.getChunkOfOneListItem(id, i);
+      sectionObj.addSectionItem(id, i, resultDatas);
+    }
+  },
+};
 
 const spinnerObj = {
   addComponents(parentDiv = section) {
     console.log("spinner has been started");
     const spinnerDiv = document.createElement("div");
     spinnerDiv.setAttribute("class", "spinner");
-    parentDiv.style.position = "relative";
-    parentDiv.appendChild(spinnerDiv);
+    const spinnerWindow = document.createElement("div");
+    spinnerWindow.setAttribute("class", "spinnerwindow");
+    spinnerWindow.style.width = (section.clientWidth - 10) + "px";    
+    spinnerWindow.appendChild(spinnerDiv);
+    parentDiv.appendChild(spinnerWindow);
     const timeout = setTimeout(function() {
       console.log("spinner has been ended");
-      document.querySelector(".spinner").remove();
+      if (document.querySelector(".spinner"))
+        document.querySelector(".spinner").remove();
       clearTimeout(timeout);
     }, 1500);
   },
-}
+};
 
 const sectionObj = {
   addComponents() {
     section = document.createElement("div");
     section.setAttribute("class", "section");
+    listsObj.addListItemContent();
     content.appendChild(section);
+  },
+  addSectionItem(itemId, sectionItemId, datas) {
+    const sectionItem = document.createElement("div");
+    sectionItem.setAttribute("class", "sectionitem");
+    sectionItem.classList.add(`sectionitem-mode--${mode}`);
+    sectionItem.innerHTML = `
+      <div class="sectionitem__order">${itemId + 1}:${sectionItemId + 1}</div>
+      <div class="sectionitem__row-right sectionitem__row-right-mode--${mode}">${datas[0]}</div>
+      <div class="sectionitem__row-left sectionitem__row-left-mode--${mode}">${datas[1]}</div>      
+    `;
+    section.appendChild(sectionItem);
   },
 };
 
@@ -255,7 +323,7 @@ const timeObj = {
     `;
     content.appendChild(timeDiv);
   },
-}
+};
 
 const contentObj = {
   addComponents() {
@@ -332,9 +400,6 @@ const getData = async function(str) {
     console.error('Error fetching data:', error);
   }
 };
-(async function() {
-  getData("surah");
-})();
 
 const collectEventListeners = function() {
   document.querySelector(".nav__btn.mode").addEventListener("click", toggleMode);
@@ -391,7 +456,7 @@ function deactivateBtns(parent, className, activeClassName) {
 function changeActiveBtns(e) {
   let el = e.target;
   if (!el.parentElement.classList.contains("sidebar__btn") && !el.classList.contains("sidebar__btn")) {
-    console.log("xayr");
+    console.log("sidebar button was not found. Good bye!!!");
     return;
   }
   if (!el.classList.contains("sidebar__btn")) {
