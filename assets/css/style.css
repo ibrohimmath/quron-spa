@@ -569,14 +569,66 @@ nav {
   height: 100%;
   width: 100%;
   display: flex;
-  justify-content: center;
-  text-align: center;
   align-items: center;
+  text-align: center;
+  flex-direction: column;
+  font-weight: 700;
 }
 
-.timediv__title {
-  font-size: 30px;
+.timediv__area {
+  margin-top: 25vh;
+  margin-left: auto;
+  margin-right: auto;
+  background: white;
+  height: fit-content;
+  width: fit-content;
+  padding: 10px 18px;
+  border-radius: 10px;
 }
+
+.timediv-mode--dark > .timediv__area {
+  background: rgb(42, 55, 76);
+  color: white;
+}
+
+.timediv__area-addition {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.fivetimes__cards {
+  margin-top: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 30px;
+}
+
+.fivetime__cards-info {
+  margin-top: 30px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.fivetime__card {
+  width: 40vw;
+  background: white;
+  border-radius: 10px;
+  text-align-last: left;
+  padding: 5px 10px;
+}
+
+.fivetime__card--active {
+  background: var(--green-dark) !important;
+  color: white !important;
+}
+
+.timediv-mode--dark .fivetime__card {
+  background: rgb(42, 55, 76);
+  color: white;
+}
+
 
 /* spinner */
 .spinner {

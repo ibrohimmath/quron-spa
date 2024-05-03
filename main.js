@@ -203,30 +203,58 @@ const listsObj = {
   changeMode() {
     lists.classList.add(`lists-mode--${mode}`);
   },
-  async addListDatas() {
+  // if arguments does not exist, we pull all list items, else if arguments was given in array format, we pull that list items with that id
+  async addListDatas(arrayID) {
     const ul = lists.querySelector("ul");
-    const listItems = await dataObj.getListItems();
+    let st;
+    if (typeof arrayID !== "undefined") {
+      st = new Set(arrayID);
+    }
+    let listItems = await dataObj.getListItems();
     listItems.forEach((item, id) => {
-      const {englishName, englishNameTranslation, name} = item;
-      const listItemActive = id == dataObj.getSelectedItem() ? `list__item--active-mode--${mode}` : "";
-      ul.insertAdjacentHTML("beforeend", `
-        <li class="list__item list__item-mode--${mode} ${listItemActive}" data-listItemId="${id}">
-          <div class="diamond diamond-mode--${mode}">
-            <span class="diamond__text">${id + 1}</span>
-          </div>
-          <div class="list__item-row">
-            <div class="col">
-              <span class="list__item-name list__item-name-mode--${mode}">${englishName}</span>
-              <span class="list__item-name-translate">${englishNameTranslation}</span>
+      if (typeof st !== "undefined") {
+        if (st.has(id + 1)) {
+          const {englishName, englishNameTranslation, name} = item;
+          const listItemActive = id == dataObj.getSelectedItem() ? `list__item--active-mode--${mode}` : "";
+          ul.insertAdjacentHTML("beforeend", `
+            <li class="list__item list__item-mode--${mode} ${listItemActive}" data-listItemId="${id}">
+              <div class="diamond diamond-mode--${mode}">
+                <span class="diamond__text">${id + 1}</span>
+              </div>
+              <div class="list__item-row">
+                <div class="col">
+                  <span class="list__item-name list__item-name-mode--${mode}">${englishName}</span>
+                  <span class="list__item-name-translate">${englishNameTranslation}</span>
+                </div>
+                <div class="col">
+                  <span>${name}</span>
+                </div>
+              </div>
+            </li>
+          `);    
+        }
+      } else {
+        const {englishName, englishNameTranslation, name} = item;
+        const listItemActive = id == dataObj.getSelectedItem() ? `list__item--active-mode--${mode}` : "";
+        ul.insertAdjacentHTML("beforeend", `
+          <li class="list__item list__item-mode--${mode} ${listItemActive}" data-listItemId="${id}">
+            <div class="diamond diamond-mode--${mode}">
+              <span class="diamond__text">${id + 1}</span>
             </div>
-            <div class="col">
-              <span>${name}</span>
+            <div class="list__item-row">
+              <div class="col">
+                <span class="list__item-name list__item-name-mode--${mode}">${englishName}</span>
+                <span class="list__item-name-translate">${englishNameTranslation}</span>
+              </div>
+              <div class="col">
+                <span>${name}</span>
+              </div>
             </div>
-          </div>
-        </li>
-      `);
-      ul.style.overflowY = "scroll";
+          </li>
+        `);        
+      }
     });
+    ul.style.overflowY = "scroll";
     lists.appendChild(ul);
   },
   clickListItem(e) {
@@ -250,6 +278,7 @@ const listsObj = {
 
   },
   deactivateListItem(id) {
+    if (!document.querySelector(`li[data-listitemid="${id}"]`)) return;
     document.querySelector(`li[data-listitemid="${id}"]`).classList.remove(`list__item--active-mode--${mode}`);
   },
   activateListItem(id) {
@@ -271,6 +300,18 @@ const listsObj = {
     for (let i = 0; i < data.numberOfAyahs; i++) {
       const resultDatas = await dataObj.getChunkOfOneListItem(id, i);
       sectionObj.addSectionItem(id, i, resultDatas);
+    }
+  },
+  async getListItemsForSearchText(text) {
+    try {
+      let response = await fetch(`https://api.alquran.cloud/v1/search/${text}/all/en`);
+      response = await response.json();
+      response = response.data.matches;
+      const matchedListItems = [...new Set([...response.map(item => item.surah.number)])];
+      matchedListItems.sort((a, b) => a - b);
+      return matchedListItems;
+    } catch (err) {
+      console.log(err);
     }
   },
 };
@@ -315,25 +356,118 @@ const sectionObj = {
 };
 
 const timeObj = {
-  addComponents() {
+  async addComponents() {
     const timeDiv = document.createElement("div");
     timeDiv.setAttribute("class", "timediv");
+    timeDiv.classList.add(`timediv-mode--${mode}`);
     timeDiv.innerHTML = `
-      <h1 class="timediv__title">Vaqt</h1>
+      <div class="timediv__area">
+        <h3 class="timediv__area-addition">Hudud nomi</h3>
+        <select name="area">
+          <option value="Toshkent">Toshkent</option>
+          <option value="Samarqand">Samarqand</option>
+          <option value="Nukus">Nukus</option>
+          <option value="Xiva">Xiva</option>
+          <option value="Buxoro">Buxoro</option>
+          <option value="Navoiy">Navoiy</option>
+          <option value="Jizzax">Jizzax</option>
+          <option value="Paxtaobod">Paxtaobod</option>
+          <option value="Dehqonobod">Dehqonobod</option>
+          <option value="Andijon">Andijon</option>
+          <option value="Farg'ona">Farg'ona</option>
+          <option value="Namangan">Namangan</option>
+        </select>
+      </div>
+      <h3 class="fivetime__cards-info">Namoz vaqtlari</h3> 
+      <div class="fivetimes__cards">
+      </div>   
     `;
+    const region = this.getRegion();
+    const obj = await this.getDataForRegion(region);
+    this.fillDatas(timeDiv, obj);    
     content.appendChild(timeDiv);
+    const selectedOption = timeDiv.querySelector(`option[value="${region}"]`);
+    selectedOption.selected = true;
   },
+  setRegion(region) {
+    localStorage.setItem("region", region);
+  },
+  getRegion() {
+    return localStorage.getItem("region") ?? "Toshkent";
+  },
+  isEqualTimes(compTime, now) {
+    if (compTime.length < 8) compTime += ":00";
+    if (now.length < 8) now += ":00";
+    compTime = compTime.split(":").map(item => +item);
+    now = now.split(":").map(item => +item);
+    const [h1, m1, s1] = compTime;
+    const [h2, m2, s2] = now;
+    return 3600 * (h2 - h1) + 60 * (m2 - m1) + (s2 - s1) === 0;
+  },
+  compareTimes(compTime, now) {
+    if (compTime.length < 8) compTime += ":00";
+    if (now.length < 8) now += ":00";
+    compTime = compTime.split(":").map(item => +item);
+    now = now.split(":").map(item => +item);
+    const [h1, m1, s1] = compTime;
+    const [h2, m2, s2] = now;
+    return 3600 * (h2 - h1) + 60 * (m2 - m1) + (s2 - s1) >= 0;
+  },
+  validInterval(a, now, b) {
+    return (this.compareTimes(a, now) || this.isEqualTimes(a, now)) && this.compareTimes(now, b);
+  },
+  fillDatas(timeDiv, obj) {
+    console.log("Fill datas func obj", obj);
+
+    // Time for comparing and activating nearby praying time
+    const timeNow = new Date();
+    const hours = timeNow.getHours();
+    const minutes = timeNow.getMinutes();
+    const seconds = timeNow.getSeconds();
+
+    const string = `${hours}:${minutes}:${seconds}`;
+    let timeStrings = [obj.tong_saharlik, obj.quyosh, obj.peshin, obj.asr, obj.shom_iftor, obj.hufton];
+    let ansInd = -1000;
+    for (let i = 0; i < 6; i++) {
+      if (this.compareTimes(timeStrings[i], string)) {
+        ansInd = i;
+      }
+      timeStrings[i] = "";
+    }
+    timeStrings[ansInd] = "fivetime__card--active";
+
+    const objExists = typeof obj !== "undefined";
+    timeDiv.querySelector(".fivetimes__cards").innerHTML = `
+      <div class="fivetime__card ${timeStrings[0]}">Bomdod namozi: ${objExists ? obj.tong_saharlik : ""}</div>
+      <div class="fivetime__card ${timeStrings[1]}">Quyosh: ${objExists ? obj.quyosh : ""}</div>
+      <div class="fivetime__card ${timeStrings[2]}">Peshin namozi: ${objExists ? obj.peshin : ""}</div>
+      <div class="fivetime__card ${timeStrings[3]}">Asr namozi: ${objExists ? obj.asr : ""}</div>
+      <div class="fivetime__card ${timeStrings[4]}">Shom namozi: ${objExists ? obj.shom_iftor : ""}</div>
+      <div class="fivetime__card ${timeStrings[5]}">Xufton namozi: ${objExists ? obj.hufton : ""}</div>
+    `;
+  },
+  async getDataForRegion(region) {
+    console.log("Request for region data was sended");
+    try {
+      let response = await fetch(`https://islomapi.uz/api/present/day?region=${region}`);
+      response = await response.json();
+      response = response.times;
+      return response;
+    } catch (err) {
+      console.log(err);
+    }
+  }
 };
 
 const contentObj = {
-  addComponents() {
+  async addComponents() {
     content = document.createElement("div");
     content.setAttribute("class", "content");
     clear(content);
     if (history.path() != "time") {
       this.addHomeComponents();
     } else {
-      this.addTimeComponents();
+      await this.addTimeComponents();
     }
     const contentWrapper = document.createElement("div");
     contentWrapper.setAttribute("class", "content__wrapper");
@@ -352,17 +486,17 @@ const contentObj = {
     listsObj.addComponents();
     sectionObj.addComponents();
   },
-  addTimeComponents() {
-    timeObj.addComponents();
+  async addTimeComponents() {
+    await timeObj.addComponents();
   },
 };
 
 const containerObj = {
-  addComponents() {
+  async addComponents() {
     container = document.createElement("div");
     container.setAttribute("class", "container");
     sidebarObj.addComponents();
-    contentObj.addComponents();
+    await contentObj.addComponents();
     app.appendChild(container);
   },
 };
@@ -417,16 +551,54 @@ const collectEventListeners = function() {
       }
       listsObj.clickListItem(e);
     });  
+    // search from input
+    document.querySelector(".searchfield").querySelector("input[type='text']").addEventListener("input", function(e) {
+      const el = e.target;
+      setTimeout(async function(e) {
+        const arrayID = await listsObj.getListItemsForSearchText(el.value);
+        console.log("IDs array for searched text has been come");
+        const ul = lists.querySelector("ul");
+        clear(ul);
+        listsObj.addListDatas(arrayID);
+      }, 1000);
+    });
+  } else {
+    document.querySelector("select").addEventListener("input", async function(e){
+      console.log("------------- Request ------------");
+      const value = e.target.value;
+      console.log("Eventhandler's value", value);
+
+      const timeDiv = document.querySelector(".timediv");
+
+      try {
+        console.log("Selected text", document.querySelector("select").value);
+        console.log("Previous selected", timeObj.getRegion());
+        
+        timeObj.setRegion(value);
+        console.log("From Local Storage", timeObj.getRegion());
+
+        // document.querySelector(".fivetimes__cards").remove();
+
+        const requestObj = await timeObj.getDataForRegion(value);
+        timeObj.fillDatas(timeDiv, requestObj);
+
+        document.querySelector(`option[value="${value}"]`).setAttribute("selected", "true");
+      } catch(err) {
+        console.log(err);
+      }
+
+      console.log("---------------------------");      
+    });
   }
 };
 
 // ------------- main render func
 
-const render = function() {
+const render = async function() {
   getMode();
 
   navObject.addComponents();
-  containerObj.addComponents();
+  await containerObj.addComponents();
 
   if (history.path()) {
     if (history.path() == "home") {
